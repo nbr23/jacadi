@@ -1,0 +1,33 @@
+services:
+  jacadi:
+    build:
+      context: .
+      args:
+        ROUTES: dreame
+      target: full
+    ports:
+      - "8080:8080"
+    # Required for ALSA audio access
+    devices:
+      - /dev/snd:/dev/snd
+    # Run as host user (1000) with audio group (29) for sound device permissions
+    # Find your audio group ID with: getent group audio
+    user: "1000:29"
+    volumes:
+      # Needed for user/group ID resolution inside container
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/etc/group:/etc/group:ro"
+      # Extra routes and audio (audio dir must be writable for TTS generation)
+      - "./extra_routes.json:/app/extra_routes.json:ro"
+      - "./extra_audio:/audio/extra"
+    environment:
+      - EXTRA_ROUTES_PATH=/app/extra_routes.json
+      # ALSA device - use 'aplay -l' to list available devices
+      # plughw enables automatic format conversion (sample rate, channels)
+      - AUDIODEV=plughw:1,0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
