@@ -1,0 +1,18 @@
+# Jacadi Home Assistant rest_command configuration
+# Generated from routes.json
+{{- range $deviceName, $device := .Devices }}
+{{- range $audioName, $_ := $device.Commands }}
+
+{{ $.Prefix }}{{ $deviceName | replace "-" "_" }}_{{ $audioName | replace "-" "_" }}:
+  url: {{ $.BaseURL }}/play/{{ $deviceName }}/{{ $audioName }}
+  method: post
+{{- end }}
+{{- end }}
+{{- if .IncludeTTS }}
+
+{{ .Prefix }}tts:
+  url: {{ .BaseURL }}/play/tts
+  method: post
+  content_type: application/json
+  payload: '{"text": "{{ "{{" }} text {{ "}}" }}", "voice": "{{ "{{" }} voice | default(''{{ .DefaultVoice }}'') {{ "}}" }}"}'
+{{- end }}

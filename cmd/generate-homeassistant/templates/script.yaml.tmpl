@@ -1,0 +1,26 @@
+# Jacadi TTS Script for Home Assistant
+
+{{ .Prefix }}speak:
+  alias: Jacadi TTS Speak
+  description: Speak text using Jacadi TTS
+  mode: queued
+  fields:
+    text:
+      name: Text
+      description: The text to speak
+      required: true
+      selector:
+        text:
+          multiline: true
+    voice:
+      name: Voice
+      description: The voice model to use
+      required: false
+      default: {{ .DefaultVoice }}
+      selector:
+        text: {}
+  sequence:
+    - service: rest_command.{{ .Prefix }}tts
+      data:
+        text: '{{ "{{" }} text {{ "}}" }}'
+        voice: '{{ "{{" }} voice {{ "}}" }}'
