@@ -1,0 +1,126 @@
+{
+  "dreame": {
+    "commands": {
+      "ok-dream": {
+        "text": "Okay dream"
+      },
+      "battery-level": {
+        "text": "Battery level"
+      },
+      "increase-suction": {
+        "text": "Increase suction"
+      },
+      "lower-suction": {
+        "text": "Lower suction"
+      },
+      "increase-water-level": {
+        "text": "Increase water level"
+      },
+      "reduce-water-level": {
+        "text": "Reduce water level"
+      },
+      "raise-voice": {
+        "text": "Raise voice"
+      },
+      "lower-voice": {
+        "text": "Lower voice"
+      },
+      "wash-mops": {
+        "text": "Wash mops"
+      },
+      "self-empty": {
+        "text": "Self empty"
+      },
+      "dry-mops": {
+        "text": "Dry mops"
+      },
+      "pause-task": {
+        "text": "Pause the task"
+      },
+      "end-task": {
+        "text": "End the task"
+      },
+      "return-to-dock": {
+        "text": "Return to dock"
+      },
+      "go-charge": {
+        "text": "Go charge"
+      },
+      "skip-here": {
+        "text": "Skip here"
+      },
+      "start-cleaning": {
+        "text": "Start cleaning"
+      },
+      "start-vacuuming-and-mopping": {
+        "text": "Start vacuuming and mopping"
+      },
+      "start-mopping": {
+        "text": "Start mopping"
+      },
+      "start-vacuuming": {
+        "text": "Start vacuuming"
+      },
+      "start-mopping-after-vacuuming": {
+        "text": "Start mopping after vacuuming"
+      },
+      "clean-living-room": {
+        "text": "Clean the living room"
+      },
+      "clean-bedroom": {
+        "text": "Clean the bedroom"
+      },
+      "clean-master-room": {
+        "text": "Clean the master room"
+      },
+      "clean-guest-room": {
+        "text": "Clean the guest room"
+      },
+      "clean-study": {
+        "text": "Clean the study"
+      },
+      "clean-kitchen": {
+        "text": "Clean the kitchen"
+      },
+      "clean-dining-room": {
+        "text": "Clean the dining room"
+      },
+      "clean-bathroom": {
+        "text": "Clean the bathroom"
+      },
+      "clean-balcony": {
+        "text": "Clean the balcony"
+      },
+      "clean-hallway": {
+        "text": "Clean the hallway"
+      },
+      "clean-utility-room": {
+        "text": "Clean the utility room"
+      },
+      "clean-closet": {
+        "text": "Clean the closet"
+      },
+      "clean-drawing-room": {
+        "text": "Clean the drawing room"
+      },
+      "clean-office": {
+        "text": "Clean the office"
+      },
+      "clean-gym": {
+        "text": "Clean the gym"
+      },
+      "clean-recreation-area": {
+        "text": "Clean the recreation area"
+      },
+      "clean-up-here": {
+        "text": "Clean up here"
+      },
+      "fast-mapping": {
+        "text": "Fast mapping"
+      },
+      "clean-pet-area": {
+        "text": "Clean the pet area"
+      }
+    }
+  }
+}
