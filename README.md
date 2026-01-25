@@ -136,3 +136,7 @@ Output goes to `ha-config/`. Include in your Home Assistant `configuration.yaml`
 rest_command: !include homeassistant_rest.yml
 script: !include homeassistant_scripts.yml
 ```
+
+### Ansible Role
+
+An Ansible role is available at [ansible-role-jacadi](https://github.com/nbr23/ansible-role-jacadi) for deploying the container.
