@@ -113,3 +113,26 @@ Convert with ffmpeg:
 ```bash
 ffmpeg -i input.wav -ar 44100 -ac 1 -acodec pcm_s16le output.wav
 ```
+
+## Extras
+
+### Home Assistant Config Generator
+
+Generate `rest_command` configuration for Home Assistant from your routes:
+
+```bash
+go run cmd/generate-homeassistant/main.go -base-url="http://jacadi.local:8080"
+```
+
+With TTS support (full image only):
+
+```bash
+go run cmd/generate-homeassistant/main.go -base-url="http://jacadi.local:8080" -tts
+```
+
+Output goes to `ha-config/`. Include in your Home Assistant `configuration.yaml`:
+
+```yaml
+rest_command: !include homeassistant_rest.yml
+script: !include homeassistant_scripts.yml
+```
