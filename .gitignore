@@ -191,5 +191,5 @@ cython_debug/
 
 bin/
 out/
-jacadi
-ha-config
+/jacadi
+/ha-config
