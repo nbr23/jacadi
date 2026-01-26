@@ -29,7 +29,7 @@ COPY ./routes/${ROUTES}.json ./routes.json
 RUN ./docker_audio_gen.py
 
 # Go app builder (Alpine/musl for slim image)
-FROM golang:1.24-alpine AS builder-alpine
+FROM --platform=${BUILDOS}/${BUILDARCH} golang:1.24-alpine AS builder-alpine
 
 RUN apk add --no-cache gcc musl-dev alsa-lib-dev
 
