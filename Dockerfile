@@ -1,5 +1,5 @@
 # Audio files generator
-FROM python:3.12-slim AS audiogen
+FROM --platform=${BUILDOS}/${BUILDARCH} python:3.12-slim AS audiogen
 
 ARG ROUTES="dreame"
 ARG VOICE="en_US-amy-low"
