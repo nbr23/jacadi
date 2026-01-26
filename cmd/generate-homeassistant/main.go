@@ -23,6 +23,9 @@ var (
 	tts          = flag.Bool("tts", false, "Generate TTS rest_command and script")
 	defaultVoice = flag.String("default-voice", "en_US-amy-low", "Default voice for TTS template")
 	scriptOutput = flag.String("script-output", "ha-config/homeassistant_scripts.yml", "Output file path for scripts")
+	routesDir    = flag.String("routes-dir", "routes", "Directory containing route JSON files")
+	extraRoutes  = flag.String("extra-routes", "extra_routes.json", "Path to extra routes file")
+	deviceFilter = flag.String("device", "", "Generate config for specific device only")
 )
 
 type TemplateData struct {
@@ -36,9 +39,17 @@ type TemplateData struct {
 func main() {
 	flag.Parse()
 
-	deviceConfig, err := config.LoadDeviceConfig("routes.json")
+	deviceConfig, err := config.LoadAllRoutes(*routesDir, *extraRoutes)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	if *deviceFilter != "" {
+		if device, ok := deviceConfig[*deviceFilter]; ok {
+			deviceConfig = config.DeviceConfig{*deviceFilter: device}
+		} else {
+			log.Fatalf("Device %q not found in config", *deviceFilter)
+		}
 	}
 
 	data := TemplateData{

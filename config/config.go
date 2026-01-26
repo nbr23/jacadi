@@ -33,6 +33,47 @@ func LoadDeviceConfig(configPath string) (DeviceConfig, error) {
 	return config, nil
 }
 
+func LoadAllRoutes(routesDir, extraRoutesPath string) (DeviceConfig, error) {
+	pattern := filepath.Join(routesDir, "*.json")
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("failed to glob routes directory: %w", err)
+	}
+
+	if len(files) == 0 {
+		return nil, fmt.Errorf("no route files found in %s", routesDir)
+	}
+
+	combined := make(DeviceConfig)
+
+	for _, file := range files {
+		cfg, err := LoadDeviceConfig(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load %s: %w", file, err)
+		}
+		combined = MergeConfigs(combined, cfg)
+	}
+
+	if extraRoutesPath != "" {
+		if _, err := os.Stat(extraRoutesPath); err == nil {
+			extraCfg, err := LoadDeviceConfig(extraRoutesPath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load extra routes: %w", err)
+			}
+			for deviceName, device := range extraCfg {
+				for cmdName, cmd := range device.Commands {
+					cmd.IsExtra = true
+					device.Commands[cmdName] = cmd
+				}
+				extraCfg[deviceName] = device
+			}
+			combined = MergeConfigs(combined, extraCfg)
+		}
+	}
+
+	return combined, nil
+}
+
 func (c DeviceConfig) Validate() error {
 	if len(c) == 0 {
 		return fmt.Errorf("no devices configured")
