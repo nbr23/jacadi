@@ -14,7 +14,7 @@ RUN uv venv /opt/venv && chmod -R a+rX /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN uv pip install piper-tts
+RUN uv pip install piper-tts==1.3.0
 RUN mkdir -p $VOICES_DIR && chown python $VOICES_DIR && chmod 755 $VOICES_DIR
 
 USER python
