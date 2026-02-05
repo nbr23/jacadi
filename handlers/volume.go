@@ -2,28 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
-	"os/exec"
-	"regexp"
-	"strconv"
 	"time"
 
-	"jacadi/config"
+	"jacadi/audio"
 )
-
-func getALSACard() string {
-	audiodev := config.GetEnv("AUDIODEV", "")
-	if audiodev == "" {
-		return "0"
-	}
-	re := regexp.MustCompile(`^(?:plug)?hw:(\d+)`)
-	if matches := re.FindStringSubmatch(audiodev); len(matches) > 1 {
-		return matches[1]
-	}
-	return "0"
-}
 
 type VolumeHandler struct {
 	logger *slog.Logger
@@ -66,15 +50,9 @@ func (h *VolumeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		volume = 100
 	}
 
-	card := getALSACard()
-	control := config.GetEnv("ALSA_CONTROL", "PCM")
-
-	cmd := exec.Command("amixer", "-c", card, "sset", control, fmt.Sprintf("%d%%", volume))
-	if output, err := cmd.CombinedOutput(); err != nil {
-		h.logger.Error("amixer failed",
+	if err := audio.SetVolume(volume); err != nil {
+		h.logger.Error("volume set failed",
 			"error", err,
-			"output", string(output),
-			"card", card,
 			"volume", volume,
 			"remote_addr", r.RemoteAddr,
 		)
@@ -89,7 +67,6 @@ func (h *VolumeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("volume set",
 		"volume", volume,
-		"card", card,
 		"remote_addr", r.RemoteAddr,
 	)
 
@@ -113,16 +90,10 @@ func NewVolumeGetHandler(logger *slog.Logger) *VolumeGetHandler {
 }
 
 func (h *VolumeGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	card := getALSACard()
-	control := config.GetEnv("ALSA_CONTROL", "PCM")
-
-	cmd := exec.Command("amixer", "-c", card, "sget", control)
-	output, err := cmd.CombinedOutput()
+	volume, err := audio.GetVolume()
 	if err != nil {
-		h.logger.Error("amixer get failed",
+		h.logger.Error("volume get failed",
 			"error", err,
-			"output", string(output),
-			"card", card,
 			"remote_addr", r.RemoteAddr,
 		)
 		w.Header().Set("Content-Type", "application/json")
@@ -132,13 +103,6 @@ func (h *VolumeGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Message: err.Error(),
 		})
 		return
-	}
-
-	re := regexp.MustCompile(`\[(\d+)%\]`)
-	matches := re.FindStringSubmatch(string(output))
-	volume := 0
-	if len(matches) > 1 {
-		volume, _ = strconv.Atoi(matches[1])
 	}
 
 	w.Header().Set("Content-Type", "application/json")

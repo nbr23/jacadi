@@ -11,6 +11,7 @@ import (
 type DeviceConfig map[string]Device
 
 type Device struct {
+	Volume   *int               `json:"volume,omitempty"`
 	Commands map[string]Command `json:"commands"`
 }
 
@@ -120,6 +121,9 @@ func (c DeviceConfig) TotalCommands() int {
 func MergeConfigs(base, extra DeviceConfig) DeviceConfig {
 	for deviceName, device := range extra {
 		if existing, ok := base[deviceName]; ok {
+			if device.Volume != nil {
+				existing.Volume = device.Volume
+			}
 			for audioName, cmd := range device.Commands {
 				existing.Commands[audioName] = cmd
 			}
