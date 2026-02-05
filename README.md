@@ -42,6 +42,14 @@ curl http://localhost:8080/health
 # Play audio (format: /play/{device}/{command})
 curl -X POST http://localhost:8080/play/dreame/ok-dream
 curl -X POST http://localhost:8080/play/dreame/clean-kitchen
+
+# Set volume (0-100)
+curl -X POST http://localhost:8080/volume \
+  -H "Content-Type: application/json" \
+  -d '{"volume": 50}'
+
+# Get current volume
+curl http://localhost:8080/volume
 ```
 
 The full image embeds piper, allowing on the fly TTS through the API:
@@ -64,6 +72,7 @@ curl -X POST http://localhost:8080/play/tts \
 - `HOST`: Listen address (default: `0.0.0.0`)
 - `PORT`: Listen port (default: `8080`)
 - `AUDIODEV`: ALSA device for audio output (e.g., `hw:3,0`)
+- `ALSA_CONTROL`: ALSA mixer control name for volume (default: `PCM`, use `Master` for internal sound cards)
 - `VOICE`: Default piper voice model (default: `en_US-amy-low`)
 
 ### Route Files

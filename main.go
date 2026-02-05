@@ -95,6 +95,14 @@ func main() {
 		}
 	}
 
+	volumeHandler := handlers.NewVolumeHandler(logger)
+	mux.Handle("POST /volume", volumeHandler)
+	logger.Info("registered route", "pattern", "POST /volume")
+
+	volumeGetHandler := handlers.NewVolumeGetHandler(logger)
+	mux.Handle("GET /volume", volumeGetHandler)
+	logger.Info("registered route", "pattern", "GET /volume")
+
 	var speaker *tts.PiperSpeaker
 	if config.IsPiperEmbedded() {
 		var err error
