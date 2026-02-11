@@ -8,11 +8,6 @@ import (
 	"sync"
 )
 
-type Player interface {
-	PlayAsync(filepath string) error
-	Close() error
-}
-
 type AplayPlayer struct {
 	wg      sync.WaitGroup
 	logger  *slog.Logger

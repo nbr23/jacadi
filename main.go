@@ -68,11 +68,14 @@ func main() {
 		"port", port,
 	)
 
-	player, err := audio.NewAplayPlayer(logger)
+	aplayPlayer, err := audio.NewAplayPlayer(logger)
 	if err != nil {
 		logger.Error("failed to initialize audio player", "error", err)
 		os.Exit(1)
 	}
+
+	folderPlayer := audio.NewFolderPlayer(logger)
+	coordinator := audio.NewCoordinator(aplayPlayer, folderPlayer, logger)
 
 	mux := http.NewServeMux()
 
@@ -80,8 +83,13 @@ func main() {
 
 	for deviceName, device := range deviceConfig {
 		for audioName, cmd := range device.Commands {
-			audioPath := config.GetAudioFilePathForCommand(deviceName, audioName, cmd.IsExtra)
-			handler := handlers.NewPlaybackHandler(player, audioPath, logger)
+			var path string
+			if cmd.Type == "folder" {
+				path = cmd.GetFolderPath(deviceName, audioName)
+			} else {
+				path = config.GetAudioFilePathForCommand(deviceName, audioName, cmd.IsExtra)
+			}
+			handler := handlers.NewPlaybackHandler(coordinator, path, cmd.Type, device.Volume, logger)
 			pattern := fmt.Sprintf("POST /play/%s/%s", deviceName, audioName)
 
 			mux.Handle(pattern, handler)
@@ -90,10 +98,15 @@ func main() {
 				"pattern", pattern,
 				"device", deviceName,
 				"audio_name", audioName,
+				"type", cmd.Type,
 				"text", cmd.Text,
 			)
 		}
 	}
+
+	stopHandler := handlers.NewStopHandler(coordinator, logger)
+	mux.Handle("POST /stop", stopHandler)
+	logger.Info("registered route", "pattern", "POST /stop")
 
 	volumeHandler := handlers.NewVolumeHandler(logger)
 	mux.Handle("POST /volume", volumeHandler)
@@ -146,8 +159,8 @@ func main() {
 		logger.Error("server shutdown error", "error", err)
 	}
 
-	if err := player.Close(); err != nil {
-		logger.Error("error closing audio player", "error", err)
+	if err := coordinator.Close(); err != nil {
+		logger.Error("error closing coordinator", "error", err)
 	}
 
 	if speaker != nil {

@@ -12,14 +12,16 @@ import (
 )
 
 type PlaybackHandler struct {
-	player    audio.Player
-	audioPath string
-	logger    *slog.Logger
+	coordinator  *audio.Coordinator
+	audioPath    string
+	cmdType      string
+	deviceVolume *int
+	logger       *slog.Logger
 }
 
 type PlaybackResponse struct {
 	Status    string `json:"status"`
-	File      string `json:"file"`
+	File      string `json:"file,omitempty"`
 	Timestamp string `json:"timestamp"`
 }
 
@@ -29,15 +31,55 @@ type ErrorResponse struct {
 	File    string `json:"file,omitempty"`
 }
 
-func NewPlaybackHandler(player audio.Player, audioPath string, logger *slog.Logger) *PlaybackHandler {
+func NewPlaybackHandler(coordinator *audio.Coordinator, audioPath, cmdType string, deviceVolume *int, logger *slog.Logger) *PlaybackHandler {
 	return &PlaybackHandler{
-		player:    player,
-		audioPath: audioPath,
-		logger:    logger,
+		coordinator:  coordinator,
+		audioPath:    audioPath,
+		cmdType:      cmdType,
+		deviceVolume: deviceVolume,
+		logger:       logger,
 	}
 }
 
 func (h *PlaybackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if h.cmdType == "folder" {
+		h.serveFolder(w, r)
+		return
+	}
+	h.serveAudio(w, r)
+}
+
+func (h *PlaybackHandler) serveFolder(w http.ResponseWriter, r *http.Request) {
+	if err := h.coordinator.PlayFolder(h.audioPath, h.deviceVolume); err != nil {
+		h.logger.Error("folder start failed",
+			"error", err,
+			"path", h.audioPath,
+			"remote_addr", r.RemoteAddr,
+		)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error:   "folder failed",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	h.logger.Info("folder started",
+		"path", r.URL.Path,
+		"dir", h.audioPath,
+		"remote_addr", r.RemoteAddr,
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(PlaybackResponse{
+		Status:    "playing",
+		Timestamp: time.Now().Format(time.RFC3339),
+	})
+}
+
+func (h *PlaybackHandler) serveAudio(w http.ResponseWriter, r *http.Request) {
 	filename := filepath.Base(h.audioPath)
 
 	if _, err := os.Stat(h.audioPath); err != nil {
@@ -70,7 +112,7 @@ func (h *PlaybackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.player.PlayAsync(h.audioPath); err != nil {
+	if err := h.coordinator.PlayAsync(h.audioPath, h.deviceVolume); err != nil {
 		h.logger.Error("playback failed",
 			"error", err,
 			"path", h.audioPath,

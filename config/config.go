@@ -17,6 +17,8 @@ type Device struct {
 
 type Command struct {
 	Text    string `json:"text"`
+	Type    string `json:"type,omitempty"`
+	Path    string `json:"path,omitempty"`
 	IsExtra bool   `json:"-"`
 }
 
@@ -97,12 +99,40 @@ func (c DeviceConfig) Validate() error {
 				return fmt.Errorf("device %s: text cannot be empty for command %s", deviceName, audioName)
 			}
 
-			audioPath := GetAudioFilePathForCommand(deviceName, audioName, cmd.IsExtra)
-			if _, err := os.Stat(audioPath); err != nil {
-				if os.IsNotExist(err) {
-					return fmt.Errorf("device %s: audio file not found: %s", deviceName, audioPath)
+			if cmd.Type == "folder" {
+				dirPath := cmd.GetFolderPath(deviceName, audioName)
+				info, err := os.Stat(dirPath)
+				if err != nil {
+					if os.IsNotExist(err) {
+						return fmt.Errorf("device %s: folder directory not found: %s", deviceName, dirPath)
+					}
+					return fmt.Errorf("device %s: error checking folder dir %s: %w", deviceName, dirPath, err)
 				}
-				return fmt.Errorf("device %s: error checking audio file %s: %w", deviceName, audioPath, err)
+				if !info.IsDir() {
+					return fmt.Errorf("device %s: folder path is not a directory: %s", deviceName, dirPath)
+				}
+				entries, err := os.ReadDir(dirPath)
+				if err != nil {
+					return fmt.Errorf("device %s: error reading folder dir %s: %w", deviceName, dirPath, err)
+				}
+				hasFiles := false
+				for _, e := range entries {
+					if !e.IsDir() {
+						hasFiles = true
+						break
+					}
+				}
+				if !hasFiles {
+					return fmt.Errorf("device %s: folder directory is empty: %s", deviceName, dirPath)
+				}
+			} else {
+				audioPath := GetAudioFilePathForCommand(deviceName, audioName, cmd.IsExtra)
+				if _, err := os.Stat(audioPath); err != nil {
+					if os.IsNotExist(err) {
+						return fmt.Errorf("device %s: audio file not found: %s", deviceName, audioPath)
+					}
+					return fmt.Errorf("device %s: error checking audio file %s: %w", deviceName, audioPath, err)
+				}
 			}
 		}
 	}
@@ -145,6 +175,21 @@ func GetAudioFilePathForCommand(deviceName, audioName string, isExtra bool) stri
 		return filepath.Join(base, "extra", deviceName, audioName+".wav")
 	}
 	return filepath.Join(base, deviceName, audioName+".wav")
+}
+
+func GetFolderDirPath(deviceName, audioName string, isExtra bool) string {
+	base := GetEnv("AUDIO_BASE_PATH", "/audio")
+	if isExtra {
+		return filepath.Join(base, "extra", deviceName, audioName)
+	}
+	return filepath.Join(base, deviceName, audioName)
+}
+
+func (c Command) GetFolderPath(deviceName, audioName string) string {
+	if c.Path != "" {
+		return c.Path
+	}
+	return GetFolderDirPath(deviceName, audioName, c.IsExtra)
 }
 
 func GetEnv(key, defaultValue string) string {

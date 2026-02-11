@@ -74,7 +74,7 @@ ENV AUDIO_BASE_PATH="/audio"
 ENV PORT="8080"
 ENV AUDIODEV=""
 
-RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates
+RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv
 RUN adduser -S go -G audio
 
 WORKDIR /app
@@ -111,6 +111,7 @@ RUN apt update && apt install --no-install-recommends -y \
     alsa-utils \
     libasound2 \
     ca-certificates \
+    mpv \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -r -g audio -G audio -m -s /bin/bash appuser

@@ -20,6 +20,7 @@ services:
       # Extra routes and audio (audio dir must be writable for TTS generation)
       - "./extra_routes.json:/app/extra_routes.json:ro"
       - "./extra_audio:/audio/extra"
+      - "./extra_folders:/extra_folders"
     environment:
       - EXTRA_ROUTES_PATH=/app/extra_routes.json
       # ALSA device - use 'aplay -l' to list available devices
