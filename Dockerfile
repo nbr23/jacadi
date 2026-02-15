@@ -112,6 +112,7 @@ RUN apt update && apt install --no-install-recommends -y \
     libasound2 \
     ca-certificates \
     mpv \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -r -g audio -G audio -m -s /bin/bash appuser
