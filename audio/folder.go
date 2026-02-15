@@ -1,7 +1,9 @@
 package audio
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -31,8 +33,8 @@ func (p *FolderPlayer) Start(dirPath string) error {
 
 	args := []string{
 		"--no-video",
-		"--no-terminal",
 		"--save-position-on-quit",
+		"--watch-later-directory=/tmp/.watchlater",
 		"--loop-playlist=inf",
 	}
 
@@ -43,12 +45,22 @@ func (p *FolderPlayer) Start(dirPath string) error {
 	args = append(args, dirPath)
 
 	cmd := exec.Command("mpv", args...)
-	cmd.Stdout = nil
-	cmd.Stderr = nil
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stderr pipe: %w", err)
+	}
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start mpv: %w", err)
 	}
+
+	p.logPipe(stdout, "stdout")
+	p.logPipe(stderr, "stderr")
 
 	p.cmd = cmd
 	p.logger.Info("folder started", "dir", dirPath, "pid", cmd.Process.Pid)
@@ -85,6 +97,15 @@ func (p *FolderPlayer) Close() {
 	defer p.mu.Unlock()
 	p.closing = true
 	p.killLocked()
+}
+
+func (p *FolderPlayer) logPipe(pipe io.ReadCloser, stream string) {
+	go func() {
+		scanner := bufio.NewScanner(pipe)
+		for scanner.Scan() {
+			p.logger.Info("mpv", "stream", stream, "msg", scanner.Text())
+		}
+	}()
 }
 
 func (p *FolderPlayer) killLocked() {
