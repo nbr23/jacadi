@@ -74,7 +74,7 @@ ENV AUDIO_BASE_PATH="/audio"
 ENV PORT="8080"
 ENV AUDIODEV=""
 
-RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv
+RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv wget
 RUN adduser -S go -G audio
 
 WORKDIR /app
