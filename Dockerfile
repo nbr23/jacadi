@@ -1,5 +1,5 @@
 # Audio files generator
-FROM --platform=${BUILDOS}/${BUILDARCH} python:3.12-slim AS audiogen
+FROM --platform=${BUILDPLATFORM} python:3.12-slim AS audiogen
 
 ARG ROUTES="dreame"
 ARG VOICE="en_US-amy-low"
@@ -29,7 +29,7 @@ COPY ./routes/${ROUTES}.json ./routes.json
 RUN ./docker_audio_gen.py
 
 # Go app builder (Alpine/musl for slim image)
-FROM --platform=${BUILDOS}/${BUILDARCH} golang:1.24-alpine AS builder-alpine
+FROM --platform=${BUILDPLATFORM} golang:1.24-alpine AS builder-alpine
 
 RUN apk add --no-cache gcc musl-dev alsa-lib-dev
 
@@ -44,7 +44,7 @@ COPY handlers ./handlers
 COPY config ./config
 COPY tts ./tts
 
-RUN GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o jacadi .
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o jacadi .
 
 # Go app builder (Debian/glibc for full image)
 FROM golang:1.24 AS builder-debian
