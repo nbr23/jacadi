@@ -27,7 +27,7 @@ pipeline {
                     docker buildx build \
                         --pull \
                         --builder \$BUILDX_BUILDER  \
-                        --platform linux/arm64 \
+                        --platform linux/arm64,linux/amd64 \
                         --target full \
                         -t nbr23/jacadi:latest \
                         -t nbr23/jacadi:full \
