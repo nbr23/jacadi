@@ -1,4 +1,5 @@
-FROM --platform=${BUILDPLATFORM} ghcr.io/astral-sh/uv:latest AS uv
+FROM --platform=${BUILDPLATFORM} ghcr.io/astral-sh/uv:latest AS uv-buildplatform
+FROM ghcr.io/astral-sh/uv:latest AS uv-targetplatform
 
 # Audio files generator
 FROM --platform=${BUILDPLATFORM} python:3.12-slim AS audiogen
@@ -11,7 +12,7 @@ ENV VOICES_DIR="/voices"
 RUN useradd --create-home --shell /bin/bash python
 RUN mkdir -p /audio && chown python /audio
 
-COPY --from=uv /uv /uvx /bin/
+COPY --from=uv-buildplatform /uv /uvx /bin/
 RUN uv venv /opt/venv && chmod -R a+rX /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
@@ -104,7 +105,7 @@ ENV PIPER_SAMPLE_RATE="16000"
 ENV VOICE=$VOICE
 ENV VOICES_DIR="/voices"
 
-COPY --from=uv /uv /uvx /bin/
+COPY --from=uv-targetplatform /uv /uvx /bin/
 RUN uv venv /opt/venv && chmod -R a+rX /opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
