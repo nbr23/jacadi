@@ -121,7 +121,7 @@ RUN apt update && apt install --no-install-recommends -y \
 RUN useradd -r -g audio -G audio -m -s /bin/bash appuser
 RUN mkdir -p /audio /audio/extra && chown -R appuser:audio /audio
 
-RUN uv pip install piper-tts
+RUN uv pip install piper-tts==1.3.0
 # RUN mkdir -p $VOICES_DIR && chown -R appuser $VOICES_DIR && chmod 755 $VOICES_DIR
 
 USER appuser
