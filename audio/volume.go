@@ -9,23 +9,28 @@ import (
 	"jacadi/config"
 )
 
-func getALSACard() string {
+var (
+	alsaCard    string
+	alsaControl string
+)
+
+func init() {
+	alsaControl = config.GetEnv("ALSA_CONTROL", "PCM")
 	audiodev := config.GetEnv("AUDIODEV", "")
 	if audiodev == "" {
-		return "0"
+		alsaCard = "0"
+		return
 	}
 	re := regexp.MustCompile(`^(?:plug)?hw:(\d+)`)
 	if matches := re.FindStringSubmatch(audiodev); len(matches) > 1 {
-		return matches[1]
+		alsaCard = matches[1]
+		return
 	}
-	return "0"
+	alsaCard = "0"
 }
 
 func GetVolume() (int, error) {
-	card := getALSACard()
-	control := config.GetEnv("ALSA_CONTROL", "PCM")
-
-	cmd := exec.Command("amixer", "-c", card, "sget", control)
+	cmd := exec.Command("amixer", "-c", alsaCard, "sget", alsaControl)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return 0, fmt.Errorf("amixer get failed: %w, output: %s", err, string(output))
@@ -48,10 +53,7 @@ func SetVolume(volume int) error {
 		volume = 100
 	}
 
-	card := getALSACard()
-	control := config.GetEnv("ALSA_CONTROL", "PCM")
-
-	cmd := exec.Command("amixer", "-c", card, "sset", control, fmt.Sprintf("%d%%", volume))
+	cmd := exec.Command("amixer", "-c", alsaCard, "sset", alsaControl, fmt.Sprintf("%d%%", volume))
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("amixer set failed: %w, output: %s", err, string(output))
 	}
