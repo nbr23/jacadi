@@ -12,6 +12,7 @@ import (
 var (
 	alsaCard    string
 	alsaControl string
+	volumeRe    = regexp.MustCompile(`\[(\d+)%\]`)
 )
 
 func init() {
@@ -36,8 +37,7 @@ func GetVolume() (int, error) {
 		return 0, fmt.Errorf("amixer get failed: %w, output: %s", err, string(output))
 	}
 
-	re := regexp.MustCompile(`\[(\d+)%\]`)
-	matches := re.FindStringSubmatch(string(output))
+	matches := volumeRe.FindStringSubmatch(string(output))
 	if len(matches) > 1 {
 		vol, _ := strconv.Atoi(matches[1])
 		return vol, nil
