@@ -22,18 +22,20 @@ type Command struct {
 	IsExtra bool   `json:"-"`
 }
 
+func ParseDeviceConfig(data []byte) (DeviceConfig, error) {
+	var cfg DeviceConfig
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config JSON: %w", err)
+	}
+	return cfg, nil
+}
+
 func LoadDeviceConfig(configPath string) (DeviceConfig, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
-
-	var config DeviceConfig
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse config JSON: %w", err)
-	}
-
-	return config, nil
+	return ParseDeviceConfig(data)
 }
 
 func LoadAllRoutes(routesDir, extraRoutesPath string) (DeviceConfig, error) {

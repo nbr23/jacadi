@@ -10,6 +10,15 @@ if [ "$PIPER_EMBEDDED" = "true" ]; then
         ROUTES_FILE="$EXTRA_ROUTES_PATH" AUDIO_OUT_DIR=/audio/extra python /app/scripts/docker_audio_gen.py || \
             echo "Warning: Audio generation failed for extra routes, continuing anyway"
     fi
+
+    if [ -n "$EXTRA_ROUTES_JSON" ]; then
+        echo "Generating audio for EXTRA_ROUTES_JSON..."
+        TMPFILE=$(mktemp /tmp/extra_routes_XXXXXX.json)
+        echo "$EXTRA_ROUTES_JSON" > "$TMPFILE"
+        ROUTES_FILE="$TMPFILE" AUDIO_OUT_DIR=/audio/extra python /app/scripts/docker_audio_gen.py || \
+            echo "Warning: Audio generation failed for EXTRA_ROUTES_JSON, continuing anyway"
+        rm -f "$TMPFILE"
+    fi
 fi
 
 exec ./jacadi

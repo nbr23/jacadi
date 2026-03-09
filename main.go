@@ -60,6 +60,24 @@ func main() {
 		}
 	}
 
+	extraJSON := os.Getenv("EXTRA_ROUTES_JSON")
+	if extraJSON != "" {
+		extraConfig, err := config.ParseDeviceConfig([]byte(extraJSON))
+		if err != nil {
+			logger.Warn("failed to parse EXTRA_ROUTES_JSON", "error", err)
+		} else {
+			for deviceName, device := range extraConfig {
+				for audioName, cmd := range device.Commands {
+					cmd.IsExtra = true
+					device.Commands[audioName] = cmd
+				}
+				extraConfig[deviceName] = device
+			}
+			deviceConfig = config.MergeConfigs(deviceConfig, extraConfig)
+			logger.Info("loaded extra routes from EXTRA_ROUTES_JSON")
+		}
+	}
+
 	logger.Info("configuration loaded",
 		"devices", len(deviceConfig),
 		"total_commands", deviceConfig.TotalCommands(),
