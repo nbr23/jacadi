@@ -75,6 +75,7 @@ curl -X POST http://localhost:8080/play/tts \
 ### Environment Variables
 
 - `EXTRA_ROUTES_PATH`: Path to extra routes file for runtime merging (optional)
+- `EXTRA_ROUTES_JSON`: Inline JSON string of extra routes for runtime merging (optional, merged after `EXTRA_ROUTES_PATH`)
 - `HOST`: Listen address (default: `0.0.0.0`)
 - `PORT`: Listen port (default: `8080`)
 - `AUDIODEV`: ALSA device for audio output (e.g., `hw:3,0`)
@@ -111,7 +112,9 @@ Routes are stored in `routes/{name}.json`. Use the `ROUTES` build arg to select 
 
 ### Extra Routes
 
-Add routes at runtime without rebuilding by mounting an `extra_routes.json` file:
+Add routes at runtime without rebuilding. Two options:
+
+**File mount** (`EXTRA_ROUTES_PATH`) — useful for Docker Compose:
 
 ```yaml
 volumes:
@@ -121,9 +124,18 @@ environment:
   - EXTRA_ROUTES_PATH=/app/extra_routes.json
 ```
 
+**Inline JSON** (`EXTRA_ROUTES_JSON`) — useful for Kubernetes ConfigMaps/Secrets (no volume mount required):
+
+```yaml
+environment:
+  - EXTRA_ROUTES_JSON={"mydevice":{"commands":{"hello":{"text":"Hello"}}}}
+```
+
+Both can be used simultaneously; `EXTRA_ROUTES_PATH` is merged first, then `EXTRA_ROUTES_JSON`. Same device/command keys in `EXTRA_ROUTES_JSON` override those from `EXTRA_ROUTES_PATH`. Invalid JSON in `EXTRA_ROUTES_JSON` logs a warning and is skipped.
+
 Audio files go in `/audio/extra/{device}/{command}.wav`. For folders, create a directory `/audio/extra/{device}/{command}/` containing audio files.
 
-- **Full image**: Missing audio files are auto-generated at startup using piper TTS
+- **Full image**: Missing audio files are auto-generated at startup using piper TTS (works for both `EXTRA_ROUTES_PATH` and `EXTRA_ROUTES_JSON`)
 - **Slim image**: You must provide the audio files manually
 
 In docker, ensure `/audio/extra` is a volume so the generated audio files persist.
