@@ -118,7 +118,9 @@ RUN apt update && apt install --no-install-recommends -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -r -g audio -G audio -m -s /bin/bash appuser
+RUN useradd -r -u 1000 -g audio -G audio -m -s /bin/bash appuser && \
+    mkdir -p /home/appuser && chown -R appuser:audio /home/appuser
+
 RUN mkdir -p /audio /audio/extra && chown -R appuser:audio /audio
 
 RUN uv pip install piper-tts==1.3.0
