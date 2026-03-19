@@ -29,6 +29,7 @@ pipeline {
                         --builder \$BUILDX_BUILDER  \
                         --platform linux/arm64,linux/amd64 \
                         --target full \
+                        --build-arg GIT_COMMIT=`git rev-parse --short HEAD` \
                         -t nbr23/jacadi:latest \
                         -t nbr23/jacadi:full \
                         -t nbr23/jacadi:full-`git rev-parse --short HEAD` \
@@ -47,6 +48,7 @@ pipeline {
                         --builder \$BUILDX_BUILDER  \
                         --platform linux/arm64,linux/amd64 \
                         --target full \
+                        --build-arg GIT_COMMIT=`git rev-parse --short HEAD` \
                         -t nbr23/jacadi:light \
                         -t nbr23/jacadi:light-`git rev-parse --short HEAD` \
                         ${ "$GIT_BRANCH" == "master" ? "--push" : ""} .

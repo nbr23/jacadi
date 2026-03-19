@@ -73,9 +73,11 @@ RUN go build -ldflags="-s -w" -o jacadi .
 FROM alpine:latest AS slim
 
 ARG ROUTES="dreame"
+ARG GIT_COMMIT=""
 ENV AUDIO_BASE_PATH="/audio"
 ENV PORT="8080"
 ENV AUDIODEV=""
+ENV GIT_COMMIT=$GIT_COMMIT
 
 RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv wget
 RUN adduser -S go -G audio
@@ -97,9 +99,11 @@ FROM python:3.12-slim AS full
 
 ARG ROUTES="dreame"
 ARG VOICE="en_US-amy-low"
+ARG GIT_COMMIT=""
 ENV AUDIO_BASE_PATH="/audio"
 ENV PORT="8080"
 ENV AUDIODEV=""
+ENV GIT_COMMIT=$GIT_COMMIT
 ENV PIPER_EMBEDDED="true"
 ENV PIPER_SAMPLE_RATE="16000"
 ENV VOICE=$VOICE

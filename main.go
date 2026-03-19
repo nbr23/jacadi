@@ -29,7 +29,7 @@ func main() {
 	}
 	logger := slog.New(handler)
 
-	logger.Info("starting audio playback server")
+	logger.Info("starting audio playback server", "commit", os.Getenv("GIT_COMMIT"))
 
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
