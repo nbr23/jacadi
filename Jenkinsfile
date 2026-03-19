@@ -15,6 +15,7 @@ pipeline {
             steps {
                 script {
                     env.BUILDX_BUILDER = getBuildxBuilder();
+                    env.GIT_SHORT_COMMIT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim();
                 }
             }
         }
@@ -29,10 +30,10 @@ pipeline {
                         --builder \$BUILDX_BUILDER  \
                         --platform linux/arm64,linux/amd64 \
                         --target full \
-                        --build-arg GIT_COMMIT=`git rev-parse --short HEAD` \
+                        --build-arg GIT_COMMIT=\$GIT_SHORT_COMMIT \
                         -t nbr23/jacadi:latest \
                         -t nbr23/jacadi:full \
-                        -t nbr23/jacadi:full-`git rev-parse --short HEAD` \
+                        -t nbr23/jacadi:full-\$GIT_SHORT_COMMIT \
                         ${ "$GIT_BRANCH" == "master" ? "--push" : ""} .
                     """
             }
@@ -48,9 +49,9 @@ pipeline {
                         --builder \$BUILDX_BUILDER  \
                         --platform linux/arm64,linux/amd64 \
                         --target full \
-                        --build-arg GIT_COMMIT=`git rev-parse --short HEAD` \
+                        --build-arg GIT_COMMIT=\$GIT_SHORT_COMMIT \
                         -t nbr23/jacadi:light \
-                        -t nbr23/jacadi:light-`git rev-parse --short HEAD` \
+                        -t nbr23/jacadi:light-\$GIT_SHORT_COMMIT \
                         ${ "$GIT_BRANCH" == "master" ? "--push" : ""} .
                     """
             }
