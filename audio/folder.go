@@ -45,6 +45,7 @@ func (p *FolderPlayer) Start(dirPath string) error {
 	args = append(args, dirPath)
 
 	cmd := exec.Command("mpv", args...)
+	cmd.Env = append(os.Environ(), "FC_CACHEDIR=/tmp")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
