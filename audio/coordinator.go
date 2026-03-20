@@ -2,8 +2,6 @@ package audio
 
 import (
 	"log/slog"
-	"os"
-	"os/exec"
 	"sync"
 )
 
@@ -55,7 +53,7 @@ func (c *Coordinator) PlaySingleFile(path string, volume *int) {
 		}
 	}
 
-	c.playSync(path)
+	c.aplay.PlaySync(path)
 
 	if restoreVolume {
 		if err := SetVolume(originalVolume); err != nil {
@@ -121,20 +119,3 @@ func (c *Coordinator) Close() error {
 	return c.aplay.Close()
 }
 
-func (c *Coordinator) playSync(filepath string) {
-	c.logger.Info("aplay sync started", "file", filepath)
-
-	var cmd *exec.Cmd
-	if dev := os.Getenv("AUDIODEV"); dev != "" {
-		cmd = exec.Command("aplay", "-q", "-D", dev, filepath)
-	} else {
-		cmd = exec.Command("aplay", "-q", filepath)
-	}
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		c.logger.Error("aplay sync failed", "file", filepath, "error", err, "output", string(output))
-		return
-	}
-	c.logger.Info("aplay sync completed", "file", filepath)
-}

@@ -26,40 +26,30 @@ func NewAplayPlayer(logger *slog.Logger) (*AplayPlayer, error) {
 	}, nil
 }
 
-func (p *AplayPlayer) PlayAsync(filepath string) error {
-	if p.closing.Load() {
-		return fmt.Errorf("player is closing")
+func (p *AplayPlayer) PlaySync(filepath string) {
+	p.wg.Add(1)
+	defer p.wg.Done()
+
+	p.logger.Info("audio playback started", "file", filepath)
+
+	var cmd *exec.Cmd
+	if dev := os.Getenv("AUDIODEV"); dev != "" {
+		cmd = exec.Command("aplay", "-q", "-D", dev, filepath)
+	} else {
+		cmd = exec.Command("aplay", "-q", filepath)
 	}
 
-	p.wg.Add(1)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		p.logger.Error("audio playback failed",
+			"file", filepath,
+			"error", err,
+			"output", string(output),
+		)
+		return
+	}
 
-	go func() {
-		defer p.wg.Done()
-
-		p.logger.Info("audio playback started", "file", filepath)
-		var cmd *exec.Cmd
-
-		if os.Getenv("AUDIODEV") != "" {
-			cmd = exec.Command("aplay", "-q", "-D", os.Getenv("AUDIODEV"), filepath)
-
-		} else {
-			cmd = exec.Command("aplay", "-q", filepath)
-		}
-
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			p.logger.Error("audio playback failed",
-				"file", filepath,
-				"error", err,
-				"output", string(output),
-			)
-			return
-		}
-
-		p.logger.Info("audio playback completed", "file", filepath)
-	}()
-
-	return nil
+	p.logger.Info("audio playback completed", "file", filepath)
 }
 
 func (p *AplayPlayer) Close() error {
