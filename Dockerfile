@@ -41,7 +41,7 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go go.* .
+COPY *.go .
 COPY audio ./audio
 COPY handlers ./handlers
 COPY config ./config
@@ -61,7 +61,7 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go go.* .
+COPY *.go .
 COPY audio ./audio
 COPY handlers ./handlers
 COPY config ./config
