@@ -83,6 +83,8 @@ func main() {
 		}
 	}
 
+	config.ApplyVolumeOverrides(deviceConfig, logger)
+
 	logger.Info("configuration loaded",
 		"devices", len(deviceConfig),
 		"total_commands", deviceConfig.TotalCommands(),

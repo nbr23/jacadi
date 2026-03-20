@@ -80,6 +80,7 @@ curl -X POST http://localhost:8080/play/tts \
 - `PORT`: Listen port (default: `8080`)
 - `AUDIODEV`: ALSA device for audio output (e.g., `hw:3,0`)
 - `ALSA_CONTROL`: ALSA mixer control name for volume (default: `PCM`, use `Master` for internal sound cards)
+- `{DEVICE}_VOLUME_OVERRIDE`: Force volume for a specific device, ignoring the route config value (e.g., `DREAME_VOLUME_OVERRIDE=20`). Device name is uppercased.
 - `VOICE`: Default piper voice model (default: `en_US-amy-low`)
 
 ### Route Files

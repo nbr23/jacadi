@@ -3,9 +3,11 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type DeviceConfig map[string]Device
@@ -192,6 +194,26 @@ func (c Command) GetFolderPath(deviceName, audioName string) string {
 		return c.Path
 	}
 	return GetFolderDirPath(deviceName, audioName, c.IsExtra)
+}
+
+func ApplyVolumeOverrides(cfg DeviceConfig, logger *slog.Logger) {
+	for deviceName, device := range cfg {
+		envKey := strings.ToUpper(deviceName) + "_VOLUME_OVERRIDE"
+		if val := os.Getenv(envKey); val != "" {
+			v, err := strconv.Atoi(val)
+			if err != nil {
+				logger.Warn("invalid volume override", "env", envKey, "value", val, "error", err)
+				continue
+			}
+			if v < 0 || v > 100 {
+				logger.Warn("volume override out of range (0-100)", "env", envKey, "value", v)
+				continue
+			}
+			device.Volume = &v
+			cfg[deviceName] = device
+			logger.Info("applied volume override", "device", deviceName, "volume", v)
+		}
+	}
 }
 
 func GetEnv(key, defaultValue string) string {
