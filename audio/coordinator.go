@@ -75,6 +75,11 @@ func (c *Coordinator) PlayFolder(dirPath string, volume *int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	if c.folder.IsPlaying() && c.resumeDir == dirPath {
+		c.logger.Info("folder already playing, skipping restart", "dir", dirPath)
+		return nil
+	}
+
 	if volume != nil {
 		if err := SetVolume(*volume); err != nil {
 			c.logger.Warn("failed to set device volume for folder", "error", err, "volume", *volume)
