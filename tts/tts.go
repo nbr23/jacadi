@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"jacadi/config"
 )
@@ -20,7 +21,7 @@ type Speaker interface {
 type PiperSpeaker struct {
 	wg         sync.WaitGroup
 	logger     *slog.Logger
-	closing    bool
+	closing    atomic.Bool
 	sampleRate int
 	audiodev   string
 }
@@ -49,7 +50,7 @@ func NewPiperSpeaker(logger *slog.Logger) (*PiperSpeaker, error) {
 }
 
 func (s *PiperSpeaker) SpeakAsync(text, voice string) error {
-	if s.closing {
+	if s.closing.Load() {
 		return fmt.Errorf("speaker is closing")
 	}
 
@@ -136,7 +137,7 @@ func (s *PiperSpeaker) speak(text, voice string) error {
 }
 
 func (s *PiperSpeaker) Close() error {
-	s.closing = true
+	s.closing.Store(true)
 	s.logger.Info("closing TTS speaker, waiting for active speech to finish...")
 	s.wg.Wait()
 	s.logger.Info("TTS speaker closed")

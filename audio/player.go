@@ -6,12 +6,13 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"sync/atomic"
 )
 
 type AplayPlayer struct {
 	wg      sync.WaitGroup
 	logger  *slog.Logger
-	closing bool
+	closing atomic.Bool
 }
 
 func NewAplayPlayer(logger *slog.Logger) (*AplayPlayer, error) {
@@ -26,7 +27,7 @@ func NewAplayPlayer(logger *slog.Logger) (*AplayPlayer, error) {
 }
 
 func (p *AplayPlayer) PlayAsync(filepath string) error {
-	if p.closing {
+	if p.closing.Load() {
 		return fmt.Errorf("player is closing")
 	}
 
@@ -62,7 +63,7 @@ func (p *AplayPlayer) PlayAsync(filepath string) error {
 }
 
 func (p *AplayPlayer) Close() error {
-	p.closing = true
+	p.closing.Store(true)
 	p.logger.Info("closing audio player, waiting for active playback to finish...")
 	p.wg.Wait()
 	p.logger.Info("audio player closed")

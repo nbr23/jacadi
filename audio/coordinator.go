@@ -9,6 +9,7 @@ import (
 
 type Coordinator struct {
 	mu        sync.Mutex
+	volumeMu  sync.Mutex
 	aplay     *AplayPlayer
 	folder    *FolderPlayer
 	resumeDir string
@@ -32,6 +33,9 @@ func (c *Coordinator) PlaySingleFile(path string, volume *int) {
 		resumeDir = c.resumeDir
 	}
 	c.mu.Unlock()
+
+	c.volumeMu.Lock()
+	defer c.volumeMu.Unlock()
 
 	var originalVolume int
 	restoreVolume := false
@@ -72,6 +76,9 @@ func (c *Coordinator) PlaySingleFile(path string, volume *int) {
 }
 
 func (c *Coordinator) PlayFolder(dirPath string, volume *int) error {
+	c.volumeMu.Lock()
+	defer c.volumeMu.Unlock()
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
