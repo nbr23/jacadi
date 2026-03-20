@@ -23,6 +23,8 @@ commands = []
 for device_name, device_config in devices.items():
     os.makedirs(f"{OUT}/{device_name}", exist_ok=True)
     for audio_name, command_info in device_config["commands"].items():
+        if command_info.get("type") == "folder":
+            continue
         commands.append({
             "device": device_name,
             "audio_name": audio_name,
