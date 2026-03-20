@@ -13,6 +13,7 @@ import (
 type FolderPlayer struct {
 	mu      sync.Mutex
 	cmd     *exec.Cmd
+	done    chan struct{}
 	logger  *slog.Logger
 	closing bool
 }
@@ -63,11 +64,14 @@ func (p *FolderPlayer) Start(dirPath string) error {
 	p.logPipe(stdout, "stdout")
 	p.logPipe(stderr, "stderr")
 
+	done := make(chan struct{})
 	p.cmd = cmd
+	p.done = done
 	p.logger.Info("folder started", "dir", dirPath, "pid", cmd.Process.Pid)
 
 	go func() {
 		err := cmd.Wait()
+		close(done)
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		if p.cmd == cmd {
@@ -110,10 +114,13 @@ func (p *FolderPlayer) logPipe(pipe io.ReadCloser, stream string) {
 }
 
 func (p *FolderPlayer) killLocked() {
-	if p.cmd != nil && p.cmd.Process != nil {
-		p.logger.Info("killing mpv", "pid", p.cmd.Process.Pid)
-		p.cmd.Process.Signal(os.Interrupt)
-		p.cmd.Process.Wait()
-		p.cmd = nil
+	if p.cmd == nil || p.cmd.Process == nil {
+		return
 	}
+	p.logger.Info("killing mpv", "pid", p.cmd.Process.Pid)
+	p.cmd.Process.Signal(os.Interrupt)
+	done := p.done
+	p.mu.Unlock()
+	<-done
+	p.mu.Lock()
 }
