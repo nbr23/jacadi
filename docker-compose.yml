@@ -27,8 +27,3 @@ services:
       # plughw enables automatic format conversion (sample rate, channels)
       - AUDIODEV=plughw:1,0
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3

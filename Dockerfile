@@ -79,7 +79,7 @@ ENV PORT="8080"
 ENV AUDIODEV=""
 ENV GIT_COMMIT=$GIT_COMMIT
 
-RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv wget
+RUN apk add --no-cache alsa-lib alsa-utils pulseaudio-utils ca-certificates mpv
 RUN adduser -S go -G audio
 
 WORKDIR /app
@@ -91,6 +91,9 @@ COPY --from=audiogen /audio/out/ /audio
 USER go
 
 EXPOSE ${PORT}
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1
 
 CMD ["./jacadi"]
 
@@ -118,8 +121,8 @@ RUN apt update && apt install --no-install-recommends -y \
     alsa-utils \
     libasound2 \
     ca-certificates \
+    curl \
     mpv \
-    wget \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -r -u 1000 -g audio -G audio -m -s /bin/bash appuser && \
@@ -145,5 +148,8 @@ COPY --chown=appuser:audio --from=audiogen /audio/out/ /audio
 COPY --chown=appuser:audio --from=audiogen /voices $VOICES_DIR
 
 EXPOSE ${PORT}
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
+    CMD curl -f http://localhost:8080/health || exit 1
 
 CMD ["./scripts/entrypoint.sh"]
