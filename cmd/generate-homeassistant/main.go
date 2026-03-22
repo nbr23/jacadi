@@ -86,7 +86,7 @@ func main() {
 		log.Fatalf("Failed to execute rest_command template: %v", err)
 	}
 
-	commandCount := deviceConfig.TotalCommands()
+	commandCount := deviceConfig.TotalCommands() + 3
 	if *tts {
 		commandCount++
 	}

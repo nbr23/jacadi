@@ -16,3 +16,17 @@
   content_type: application/json
   payload: '{"text": "{{ "{{" }} text {{ "}}" }}", "voice": "{{ "{{" }} voice | default(''{{ .DefaultVoice }}'') {{ "}}" }}"}'
 {{- end }}
+
+{{ .Prefix }}stop:
+  url: {{ .BaseURL }}/stop
+  method: post
+
+{{ .Prefix }}set_volume:
+  url: {{ .BaseURL }}/volume
+  method: post
+  content_type: application/json
+  payload: '{"volume": {{ "{{" }} volume {{ "}}" }}}'
+
+{{ .Prefix }}get_volume:
+  url: {{ .BaseURL }}/volume
+  method: get
