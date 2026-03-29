@@ -15,6 +15,7 @@ type PlaybackHandler struct {
 	coordinator  *audio.Coordinator
 	audioPath    string
 	cmdType      string
+	restart      bool
 	deviceVolume *int
 	logger       *slog.Logger
 }
@@ -31,11 +32,12 @@ type ErrorResponse struct {
 	File    string `json:"file,omitempty"`
 }
 
-func NewPlaybackHandler(coordinator *audio.Coordinator, audioPath, cmdType string, deviceVolume *int, logger *slog.Logger) *PlaybackHandler {
+func NewPlaybackHandler(coordinator *audio.Coordinator, audioPath, cmdType string, restart bool, deviceVolume *int, logger *slog.Logger) *PlaybackHandler {
 	return &PlaybackHandler{
 		coordinator:  coordinator,
 		audioPath:    audioPath,
 		cmdType:      cmdType,
+		restart:      restart,
 		deviceVolume: deviceVolume,
 		logger:       logger,
 	}
@@ -50,7 +52,7 @@ func (h *PlaybackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlaybackHandler) serveFolder(w http.ResponseWriter, r *http.Request) {
-	if err := h.coordinator.PlayFolder(h.audioPath, h.deviceVolume); err != nil {
+	if err := h.coordinator.PlayFolder(h.audioPath, h.deviceVolume, h.restart); err != nil {
 		h.logger.Error("folder start failed",
 			"error", err,
 			"path", h.audioPath,

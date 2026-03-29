@@ -95,7 +95,8 @@ Routes are stored in `routes/{name}.json`. Use the `ROUTES` build arg to select 
       "ok-dream": { "text": "Okay dream" },
       "clean-kitchen": { "text": "Clean the kitchen" },
       "ambient": { "text": "Ambient music", "type": "folder" },
-      "music": { "text": "Background music", "type": "folder", "path": "/music/library" }
+      "music": { "text": "Background music", "type": "folder", "path": "/music/library" },
+      "jingle": { "text": "Jingle loop", "type": "folder", "restart": true }
     }
   }
 }
@@ -107,6 +108,7 @@ Routes are stored in `routes/{name}.json`. Use the `ROUTES` build arg to select 
   - `text`: Description of the command
   - `type`: Playback type (omit for single file, `"folder"` for directory loop)
   - `path`: Optional custom path for folder directory (overrides default location)
+  - `restart`: Optional boolean for folder commands. When `true`, always starts from the beginning instead of resuming from last position
 - Audio locations:
   - Single file: `assets/audio/{device}/{command}.wav` (copied to `/audio/` at build time)
   - Folder: `assets/audio/{device}/{command}/` directory containing audio files (or custom `path`)

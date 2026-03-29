@@ -21,6 +21,7 @@ type Command struct {
 	Text    string `json:"text"`
 	Type    string `json:"type,omitempty"`
 	Path    string `json:"path,omitempty"`
+	Restart bool   `json:"restart,omitempty"`
 	IsExtra bool   `json:"-"`
 }
 

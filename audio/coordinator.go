@@ -6,12 +6,13 @@ import (
 )
 
 type Coordinator struct {
-	mu        sync.Mutex
-	volumeMu  sync.Mutex
-	aplay     *AplayPlayer
-	folder    *FolderPlayer
-	resumeDir string
-	logger    *slog.Logger
+	mu             sync.Mutex
+	volumeMu       sync.Mutex
+	aplay          *AplayPlayer
+	folder         *FolderPlayer
+	resumeDir      string
+	resumeRestart  bool
+	logger         *slog.Logger
 }
 
 func NewCoordinator(aplay *AplayPlayer, folder *FolderPlayer, logger *slog.Logger) *Coordinator {
@@ -25,10 +26,12 @@ func NewCoordinator(aplay *AplayPlayer, folder *FolderPlayer, logger *slog.Logge
 func (c *Coordinator) PlaySingleFile(path string, volume *int) {
 	c.mu.Lock()
 	resumeDir := ""
+	resumeRestart := false
 	if c.folder.IsPlaying() {
 		c.logger.Info("interrupting folder for single file", "file", path)
 		c.folder.Stop()
 		resumeDir = c.resumeDir
+		resumeRestart = c.resumeRestart
 	}
 	c.mu.Unlock()
 
@@ -67,13 +70,13 @@ func (c *Coordinator) PlaySingleFile(path string, volume *int) {
 		c.mu.Lock()
 		if c.resumeDir == resumeDir {
 			c.logger.Info("resuming folder", "dir", resumeDir)
-			c.folder.Start(resumeDir)
+			c.folder.Start(resumeDir, resumeRestart)
 		}
 		c.mu.Unlock()
 	}
 }
 
-func (c *Coordinator) PlayFolder(dirPath string, volume *int) error {
+func (c *Coordinator) PlayFolder(dirPath string, volume *int, restart bool) error {
 	c.volumeMu.Lock()
 	defer c.volumeMu.Unlock()
 
@@ -95,7 +98,8 @@ func (c *Coordinator) PlayFolder(dirPath string, volume *int) error {
 
 	c.folder.Stop()
 	c.resumeDir = dirPath
-	return c.folder.Start(dirPath)
+	c.resumeRestart = restart
+	return c.folder.Start(dirPath, restart)
 }
 
 func (c *Coordinator) StopFolder() {

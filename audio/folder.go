@@ -22,7 +22,7 @@ func NewFolderPlayer(logger *slog.Logger) *FolderPlayer {
 	return &FolderPlayer{logger: logger}
 }
 
-func (p *FolderPlayer) Start(dirPath string) error {
+func (p *FolderPlayer) Start(dirPath string, restart bool) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -34,9 +34,11 @@ func (p *FolderPlayer) Start(dirPath string) error {
 
 	args := []string{
 		"--no-video",
-		"--save-position-on-quit",
-		"--watch-later-directory=/tmp/.watchlater",
 		"--loop-playlist=inf",
+	}
+
+	if !restart {
+		args = append(args, "--save-position-on-quit", "--watch-later-directory=/tmp/.watchlater")
 	}
 
 	if dev := os.Getenv("AUDIODEV"); dev != "" {

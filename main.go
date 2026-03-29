@@ -114,7 +114,7 @@ func main() {
 			} else {
 				path = config.GetAudioFilePathForCommand(deviceName, audioName, cmd.IsExtra)
 			}
-			handler := handlers.NewPlaybackHandler(coordinator, path, cmd.Type, device.Volume, logger)
+			handler := handlers.NewPlaybackHandler(coordinator, path, cmd.Type, cmd.Restart, device.Volume, logger)
 			pattern := fmt.Sprintf("POST /play/%s/%s", deviceName, audioName)
 
 			mux.Handle(pattern, handler)
