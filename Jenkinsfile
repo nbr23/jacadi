@@ -19,6 +19,18 @@ pipeline {
                 }
             }
         }
+        stage('Test') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v "$PWD":/src \
+                        -w /src \
+                        -e GOFLAGS=-buildvcs=false \
+                        golang:1.24 \
+                        sh -c "go mod download && go test -race -count=1 ./..."
+                '''
+            }
+        }
         stage('Build full Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
