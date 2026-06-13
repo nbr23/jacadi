@@ -49,6 +49,9 @@ curl -X POST http://localhost:8080/play/dreame/ambient
 # Stop folder
 curl -X POST http://localhost:8080/stop
 
+# Check whether playback is in progress
+curl http://localhost:8080/status
+
 # Set volume (0-100)
 curl -X POST http://localhost:8080/volume \
   -H "Content-Type: application/json" \

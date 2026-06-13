@@ -110,6 +110,22 @@ func (c *Coordinator) StopFolder() {
 	c.resumeDir = ""
 }
 
+type PlaybackStatus struct {
+	Playing bool
+	File    bool
+	Folder  bool
+}
+
+func (c *Coordinator) Status() PlaybackStatus {
+	file := c.aplay.IsPlaying()
+	folder := c.folder.IsPlaying()
+	return PlaybackStatus{
+		Playing: file || folder,
+		File:    file,
+		Folder:  folder,
+	}
+}
+
 func (c *Coordinator) PlayAsync(filepath string, volume *int) error {
 	go c.PlaySingleFile(filepath, volume)
 	return nil

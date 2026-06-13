@@ -13,6 +13,7 @@ type AplayPlayer struct {
 	wg      sync.WaitGroup
 	logger  *slog.Logger
 	closing atomic.Bool
+	active  atomic.Int32
 }
 
 func NewAplayPlayer(logger *slog.Logger) (*AplayPlayer, error) {
@@ -29,6 +30,9 @@ func NewAplayPlayer(logger *slog.Logger) (*AplayPlayer, error) {
 func (p *AplayPlayer) PlaySync(filepath string) {
 	p.wg.Add(1)
 	defer p.wg.Done()
+
+	p.active.Add(1)
+	defer p.active.Add(-1)
 
 	p.logger.Info("audio playback started", "file", filepath)
 
@@ -50,6 +54,10 @@ func (p *AplayPlayer) PlaySync(filepath string) {
 	}
 
 	p.logger.Info("audio playback completed", "file", filepath)
+}
+
+func (p *AplayPlayer) IsPlaying() bool {
+	return p.active.Load() > 0
 }
 
 func (p *AplayPlayer) Close() error {

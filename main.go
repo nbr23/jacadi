@@ -141,6 +141,10 @@ func main() {
 	mux.Handle("GET /volume", volumeGetHandler)
 	logger.Info("registered route", "pattern", "GET /volume")
 
+	statusHandler := handlers.NewStatusHandler(coordinator, logger)
+	mux.Handle("GET /status", statusHandler)
+	logger.Info("registered route", "pattern", "GET /status")
+
 	var speaker *tts.PiperSpeaker
 	if config.IsPiperEmbedded() {
 		var err error
